@@ -7,7 +7,7 @@ init()
         if [ -z "$1" ]; then
                 echo ""
                 echo "kexec-sign-test.sh init kernel_source_folder"
-                echo "	kernel_source_folder 	The kernel source folder(absolute path) has signing_key.priv/.x509. "
+                echo "	kernel_source_folder 	The kernel source folder(absolute path) has signing_key.pem/.x509. "
                 echo ""
                 echo "  e.g. kexec-sign-test.sh init /usr/src/linux-3.12.47-1"
                 echo "       It will copy signing_key.* and generates certdb to /root/kexec-sign folder"
@@ -36,7 +36,7 @@ init()
 	cd /root
 	mkdir kexec-sign
 	cd $WORKSPACE
-	cp $KERNEL_SOURCE/signing_key.* ./
+	cp $KERNEL_SOURCE/certs/signing_key.* ./
 
 	mkdir certdb
 	certutil -d certdb/ -A -i signing_key.x509 -n cert -t CT,CT,CT
@@ -63,7 +63,7 @@ sign()
 	cd $WORKSPACE
 	rm ./"$TARGET_KERNEL".s*
 	pesign -n certdb/ -i /boot/"$TARGET_KERNEL" -E ./"$TARGET_KERNEL".sattrs
-	openssl dgst -sha256 -sign signing_key.priv ./"$TARGET_KERNEL".sattrs > ./"$TARGET_KERNEL".sattrs.sig
+	openssl dgst -sha256 -sign signing_key.pem ./"$TARGET_KERNEL".sattrs > ./"$TARGET_KERNEL".sattrs.sig
 	pesign -n certdb/ -c cert -i /boot/"$TARGET_KERNEL" -R ./"$TARGET_KERNEL".sattrs.sig -I ./"$TARGET_KERNEL".sattrs -o ./"$TARGET_KERNEL".signed
 	pesign -S -i ./"$TARGET_KERNEL".signed
 
@@ -87,7 +87,7 @@ loadtest()
 	SIGNED_KERNEL=$1
 
 	cd $WORKSPACE
-	/sbin/kexec -p ./$SIGNED_KERNEL --append="ro quiet elevator=deadline sysrq=yes\
+	/sbin/kexec -s -p ./$SIGNED_KERNEL --append="ro quiet elevator=deadline sysrq=yes\
 	reset_devices acpi_no_memhotplug cgroup_disable=memory irqpoll nr_cpus=1 disable_cpu_apicid=0 noefi\
 	acpi_rsdp=0xdfbfe014  panic=1" 
 
