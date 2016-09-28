@@ -10,7 +10,7 @@ init()
                 echo "	kernel_source_folder 	The kernel source folder(absolute path) has signing_key.priv/.x509. "
                 echo ""
                 echo "  e.g. kexec-sign-test.sh init /usr/src/linux-3.12.47-1"
-                echo "       It will copy signing_key.* and generates certdb in /root/kexec-sign-test folder"
+                echo "       It will copy signing_key.* and generates certdb to /root/kexec-sign folder"
                 echo ""
                 exit 0
         fi
@@ -89,7 +89,7 @@ loadtest()
 	cd $WORKSPACE
 	/sbin/kexec -p ./$SIGNED_KERNEL --append="ro quiet elevator=deadline sysrq=yes\
 	reset_devices acpi_no_memhotplug cgroup_disable=memory irqpoll nr_cpus=1 disable_cpu_apicid=0 noefi\
-	acpi_rsdp=0xdfbfe014  panic=1"  -s
+	acpi_rsdp=0xdfbfe014  panic=1" 
 
 	dmesg | grep kexec
 }
